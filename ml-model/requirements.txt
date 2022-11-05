@@ -96,3 +96,6 @@ websocket-client==1.4.2
 widgetsnbextension==4.0.3
 zipp==3.10.0
 backtesting
+flask
+requests
+gunicorn
