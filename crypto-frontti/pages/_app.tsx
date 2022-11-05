@@ -3,19 +3,12 @@ import { NextUIProvider } from '@nextui-org/react';
 import { createTheme } from "@nextui-org/react"
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-
 const lightTheme = createTheme({
   type: 'light',
-  theme: {
-    colors: {}
-  }
 })
 
 const darkTheme = createTheme({
   type: 'dark',
-  theme: {
-    colors: {}, // override dark theme colors
-  }
 });
 
 export default function App({ Component, pageProps }: AppProps) {
