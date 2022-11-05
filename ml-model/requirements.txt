@@ -99,3 +99,4 @@ backtesting
 flask
 requests
 gunicorn
+binance-connector

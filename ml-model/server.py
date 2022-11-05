@@ -6,12 +6,13 @@ from io import StringIO
 import ta
 import numpy as np
 from catboost import CatBoostClassifier
+from binance.spot import Spot 
 
 app = Flask(__name__)
 
-api_key = "XFDSGKBCYAWM4BX3"
+tickers = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
 
-tickers = ["BTC", "ETH", "BNB"]
+client = Spot()
 
 @app.route("/predict", methods=["GET"])
 def predict():
@@ -21,31 +22,24 @@ def predict():
     closes = []
     preds = []
     for ticker in tickers:
-        url = (f"https://www.alphavantage.co/query?function=CRYPTO_INTRADAY&symbol={ticker}&market=USD"
-               f"&interval=1min&apikey={api_key}&datatype=csv")
-        with requests.Session() as s:
-            download = s.get(url)
-            decoded_content = download.content.decode("utf-8")
-            data = pd.read_csv(StringIO(decoded_content))
-            data = data[::-1]
+        
+        response = client.klines(ticker, "1m", limit=100)
+        data = pd.DataFrame(response, columns=["Timestamp", "Open", "High", "Low", "Close", "Volume", *range(6)])
+        data = data[["Open", "High", "Low", "Close", "Volume"]].astype(float)
+        data["rsi"] = ta.momentum.rsi(data.Close)
 
-        data["rsi"] = ta.momentum.rsi(data.close)
-
-        predict_data = np.array([data["rsi"][0]])
-
+        predict_data = np.array([data["rsi"].iloc[-1]])
         prediction = model.predict_proba(predict_data)
 
         preds.append(prediction)
-        closes.append(data.close[0])
-
-        sleep(1)
+        closes.append(data.Close.iloc[-1])
 
     result = [
         { "ticker": ticker,
           "close": close,
-          "SELL": prediction[0],
-          "HOLD": prediction[1],
-          "BUY": prediction[2] } for ticker, close, prediction in zip(tickers, closes, preds)
+          "sell": prediction[0],
+          "hold": prediction[1],
+          "buy": prediction[2] } for ticker, close, prediction in zip(tickers, closes, preds)
     ]
     return jsonify(result)
 
