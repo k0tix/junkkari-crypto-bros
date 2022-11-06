@@ -1,4 +1,4 @@
-import { Badge, Loading, Spacer, Switch, Table, useTheme } from '@nextui-org/react';
+import { Badge, Loading, Popover, Spacer, Switch, Table, useTheme } from '@nextui-org/react';
 import { useTheme as useNextTheme } from 'next-themes'
 import { Ref, useEffect, useState } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
@@ -159,6 +159,7 @@ export default function Home() {
                 <Table.Row >
                   {(columnKey) => {
                     const value = item[columnKey];
+                    let cell;
 
                     if (columnKey === 'action') {
                       let color: 'secondary' | 'primary' | 'default';
@@ -171,14 +172,60 @@ export default function Home() {
                         color = 'default';
                       }
 
-                      return <Table.Cell><Badge enableShadow disableOutline color={color}>{value}</Badge></Table.Cell>
+                      cell = <Badge enableShadow disableOutline color={color}>{value}</Badge>
+                    } else {
+                      cell = <>{value}</>
                     }
 
-                    // if (columnKey === 'ticker') {
-                    //   return //<CryptoIcon ticker={value} />//tickerToIcon(value)
-                    // }
+                    return <Table.Cell><Popover>
+                      <Popover.Trigger>
+                        {cell}
+                      </Popover.Trigger>
+                      <Popover.Content>
+                        <Table
+                          bordered
+                          shadow={false}
+                          css={{
+                            maxHeight: "auto",
+                            minWidth: "400px",
+                          }}
+                        >
+                          <Table.Header columns={columns}>
+                            {(column) => (
+                              <Table.Column key={column.key}>{column.label}</Table.Column>
+                            )}
+                          </Table.Header>
+                          <Table.Body items={data.filter((i) => i.ticker == item.ticker)}>
+                            {(item: any) => (
+                              <Table.Row >
+                                {(columnKey) => {
+                                  const value = item[columnKey];
+                                  let cell;
 
-                    return <Table.Cell>{value}</Table.Cell>
+                                  if (columnKey === 'action') {
+                                    let color: 'secondary' | 'primary' | 'default';
+
+                                    if (value === 'sell') {
+                                      color = 'secondary';
+                                    } else if (value === 'buy') {
+                                      color = 'primary';
+                                    } else {
+                                      color = 'default';
+                                    }
+
+                                    cell = <Badge enableShadow disableOutline color={color}>{value}</Badge>
+                                  } else {
+                                    cell = <>{value}</>
+                                  }
+
+                                  return <Table.Cell>{cell}</Table.Cell>
+                                }}
+                              </Table.Row>
+                            )}
+                          </Table.Body>
+                        </Table>
+                      </Popover.Content>
+                    </Popover></Table.Cell>
                   }}
                 </Table.Row>
               )}
