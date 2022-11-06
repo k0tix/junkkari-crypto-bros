@@ -2,7 +2,7 @@ import { Badge, Loading, Popover, Spacer, Switch, Table, useTheme } from '@nextu
 import { useTheme as useNextTheme } from 'next-themes'
 import { Ref, useEffect, useState } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import Message, { CryptoIcon, MonkeyType } from '../components/_roina';
+import Message, { MonkeyType } from '../components/_roina';
 
 const baseUrl = 'https://cryptochimpgw-9oq2br2d.ew.gateway.dev'
 
@@ -37,7 +37,7 @@ const columns = [
   },
 ];
 
-const tickers = ['btcusdt', 'bnbusdt', 'ethusdt',] as const //'dogeusdt', 'xrpusdt', 'busdusdt', 'adausdt', 'solusdt', 'maticusdt', 'dotusdt'] as const
+const tickers = ['btcusdt', 'bnbusdt', 'ethusdt', 'dogeusdt', 'xrpusdt', 'busdusdt', 'adausdt', 'solusdt', 'maticusdt', 'dotusdt'] as const
 type supportedTicker = typeof tickers[number]
 
 type data = {
@@ -46,7 +46,7 @@ type data = {
   sell: number
   hold: number
   close: number
-  ticker: string
+  ticker: supportedTicker
   timestamp: string
 }
 
@@ -57,7 +57,7 @@ const getLatestCoins = (tableRows: tableData[]): tableData[] => {
 type action = 'buy' | 'sell' | 'hold'
 
 type tableData = {
-  ticker: string
+  ticker: supportedTicker
   action: action
   timestamp: number
   id: number
@@ -168,7 +168,7 @@ export default function Home() {
     return () => {
       clearInterval(interval);
     };
-  }, [])
+  },)
 
 
   return (
