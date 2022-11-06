@@ -7,6 +7,7 @@ import ta
 import numpy as np
 from catboost import CatBoostClassifier
 from binance.spot import Spot 
+import talib
 
 app = Flask(__name__)
 
@@ -17,7 +18,7 @@ client = Spot()
 @app.route("/predict", methods=["GET"])
 def predict():
     model = CatBoostClassifier()
-    model.load_model("kisu.cbm")
+    model.load_model("kisu-talib.cbm")
 
     closes = []
     preds = []
@@ -27,8 +28,8 @@ def predict():
         data = pd.DataFrame(response, columns=["Timestamp", "Open", "High", "Low", "Close", "Volume", *range(6)])
         data = data[["Open", "High", "Low", "Close", "Volume"]].astype(float)
         data["rsi"] = ta.momentum.rsi(data.Close)
-
-        predict_data = np.array([data["rsi"].iloc[-1]])
+        data["doji"] = talib.CDLDOJI(data.Open, data.High, data.Low, data.Close)
+        predict_data = np.array(data[["rsi", "doji"]].iloc[-1])
         prediction = model.predict_proba(predict_data)
 
         preds.append(prediction)

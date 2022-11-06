@@ -100,3 +100,4 @@ flask
 requests
 gunicorn
 binance-connector
+TA-Lib
