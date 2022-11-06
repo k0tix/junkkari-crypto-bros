@@ -2,7 +2,7 @@ import { Badge, Loading, Popover, Spacer, Switch, Table, useTheme } from '@nextu
 import { useTheme as useNextTheme } from 'next-themes'
 import { Ref, useEffect, useState } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import Message, { CryptoIcon } from '../components/_roina';
+import Message, { CryptoIcon, MonkeyType } from '../components/_roina';
 
 const baseUrl = 'https://cryptochimpgw-9oq2br2d.ew.gateway.dev'
 
@@ -87,6 +87,9 @@ export default function Home() {
   const { isDark, type } = useTheme();
   const [data, setData] = useState<tableData[]>([]);
   const [animationParent] = useAutoAnimate()
+  const [lastTopCoin, setLastTopCoin] = useState<tableData | undefined>(undefined)
+  const [chimpMessage, setChimpMessage] = useState<string>('')
+  const [chimpMode, setChimpMode] = useState<MonkeyType>('idle')
 
   const getData = () => {
     console.log('Getting new data')
@@ -100,7 +103,38 @@ export default function Home() {
         return res.json();
       })
       .then((data) => {
-        setData(data.map(formatData));
+        let values = data.map(formatData)
+        setData(values);
+
+        values = values.slice(0, tickers.length).sort((a: tableData, b: tableData) => b.chimpScore - a.chimpScore);
+        const lastLastCoin = lastTopCoin;
+        const lastNewCoin = values[0];
+
+        let newLastCoin: tableData | undefined
+
+        if (lastLastCoin === undefined) {
+          newLastCoin = lastNewCoin;
+        } else if (lastLastCoin.action !== lastNewCoin.action || lastLastCoin.ticker !== lastNewCoin.ticker) {
+          newLastCoin = lastNewCoin;
+        }
+
+        if (newLastCoin !== undefined) {
+          setLastTopCoin(newLastCoin);
+          let mode: MonkeyType = 'idle'
+          let message = `You should really ${newLastCoin.action} ${newLastCoin.ticker} right now`
+
+
+          if (newLastCoin.action === 'buy' || newLastCoin.action === 'sell') {
+            mode = 'buysell'
+          } else if (newLastCoin.action === 'hold') {
+            mode = 'hold'
+          } else {
+            message = ''
+          }
+
+          setChimpMode(mode)
+          setChimpMessage(message)
+        }
       }).catch((e) => console.log(e))
   }
 
@@ -233,7 +267,7 @@ export default function Home() {
           </Table>
           : <Loading size="xl" />
       }
-      <Message message={message} type='sunglasses' duration={10000000} />
+      <Message message={chimpMessage} type={chimpMode} />
     </div >
   )
 

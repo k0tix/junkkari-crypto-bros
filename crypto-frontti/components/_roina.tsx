@@ -2,28 +2,24 @@ import { useEffect, useState } from "react";
 import { Card, Image } from '@nextui-org/react';
 import { Bitcoin, Binance } from 'cryptocons'
 
-type MonkeyType = 'sunglasses' | 'yes' | 'sad' | 'spin';
+export type MonkeyType = 'hold' | 'idle' | 'buysell';
 
 type MessageProps = {
     message: string
-    duration: number
     type: MonkeyType
 }
 
 const monkeyTypeToPath = (type: MonkeyType): string => {
-    if (type === 'sunglasses') {
+    if (type === 'hold') {
         return '/chimp.gif'
     }
 
-    if (type === 'sad') {
-        return '/chimp.gif'
-    }
 
-    if (type === 'yes') {
+    if (type === 'idle') {
         return '/chimp-yes.gif'
     }
 
-    if (type === 'spin') {
+    if (type === 'buysell') {
         return '/chimp-spin.gif'
     }
 
@@ -31,37 +27,29 @@ const monkeyTypeToPath = (type: MonkeyType): string => {
 }
 
 const monkeyWidthHeight: Record<MonkeyType, { width: number, height: number }> = {
-    'spin': { height: 150, width: 150 },
-    'sad': { height: 100, width: 100 },
-    'sunglasses': { height: 120, width: 120 },
-    'yes': { height: 100, width: 100 },
+    'buysell': { height: 150, width: 150 },
+    'hold': { height: 120, width: 120 },
+    'idle': { height: 100, width: 100 },
 }
 
-export default function Message({ message, duration, type }: MessageProps) {
-    const [m, setMessage] = useState<string>(message);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setMessage('');
-        }, duration)
-    }, [])
-
+export default function Message({ message, type }: MessageProps) {
     return (
-        m.length ? <div style={{
+        <div style={{
             position: 'fixed',
             bottom: 0,
             right: 0,
             margin: '1em',
             padding: '1em'
         }}>
-            <Card style={{
-                margin: '1em',
-                padding: '1em'
-            }} isHoverable variant="bordered">{message}</Card>
+            {message.length ?
+                <Card style={{
+                    margin: '1em',
+                    padding: '1em'
+                }} isHoverable variant="bordered">{message}</Card> : <></>}
 
             <Image src={monkeyTypeToPath(type)} alt="me" width={monkeyWidthHeight[type].width} height={monkeyWidthHeight[type].height} />
 
-        </div> : <></>
+        </div>
     )
 }
 
