@@ -22,13 +22,23 @@ const columns = [
   {
     key: "close",
     label: "PRICE ($)"
-  }
+  },
+  {
+    key: 'buy',
+    label: "BUY"
+  },
+  {
+    key: 'sell',
+    label: "SELL"
+  },
+  {
+    key: 'hold',
+    label: "HOLD"
+  },
 ];
 
-const tickers = ['btcusdt', 'bnbusdt', 'ethusdt'] as const
+const tickers = ['btcusdt', 'bnbusdt', 'ethusdt',] as const //'dogeusdt', 'xrpusdt', 'busdusdt', 'adausdt', 'solusdt', 'maticusdt', 'dotusdt'] as const
 type supportedTicker = typeof tickers[number]
-
-const message = 'Osta nyt vittu';
 
 type data = {
   id: number
@@ -53,6 +63,9 @@ type tableData = {
   id: number
   close: number
   chimpScore: number
+  buy: number
+  sell: number
+  hold: number
 }
 
 const formatData = (data: data): tableData => {
@@ -78,6 +91,11 @@ const formatData = (data: data): tableData => {
     timestamp: Date.parse(data.timestamp),
     close: data.close,
     chimpScore,
+    buy: Number(data.buy.toFixed(2)),
+    sell: Number(data.sell.toFixed(2)),
+    hold: Number(data.hold.toFixed(2))
+
+
   } as tableData
 }
 
@@ -134,6 +152,11 @@ export default function Home() {
 
           setChimpMode(mode)
           setChimpMessage(message)
+
+          setTimeout(() => {
+            setChimpMode('idle')
+            setChimpMessage('')
+          }, 1000 * 15)
         }
       }).catch((e) => console.log(e))
   }
