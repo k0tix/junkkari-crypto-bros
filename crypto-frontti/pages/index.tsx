@@ -1,50 +1,116 @@
-import { Badge, Spacer, Switch, Table, useTheme } from '@nextui-org/react';
+import { Badge, Loading, Spacer, Switch, Table, useTheme } from '@nextui-org/react';
 import { useTheme as useNextTheme } from 'next-themes'
 import { Ref, useEffect, useState } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import Message from '../components/_roina';
+import Message, { CryptoIcon } from '../components/_roina';
 
 const baseUrl = 'https://cryptochimpgw-9oq2br2d.ew.gateway.dev'
 
 const columns = [
   {
-    key: "coin",
+    key: "ticker",
     label: "TICKER",
   },
   {
-    key: "prediction",
+    key: "action",
     label: "PREDICTION",
   },
   {
-    key: "price",
-    label: "PRICE",
+    key: "chimpScore",
+    label: "SCORE",
   },
+  {
+    key: "close",
+    label: "PRICE ($)"
+  }
 ];
+
+const tickers = ['btcusdt', 'bnbusdt', 'ethusdt'] as const
+type supportedTicker = typeof tickers[number]
 
 const message = 'Osta nyt vittu';
 
 type data = {
-  coin: string
   id: number
-  prediction: string
-  price: string
+  buy: number
+  sell: number
+  hold: number
+  close: number
+  ticker: string
   timestamp: string
 }
+
+const getLatestCoins = (tableRows: tableData[]): tableData[] => {
+  return tableRows.slice(0, tickers.length).sort((a, b) => b.chimpScore - a.chimpScore)
+}
+
+type action = 'buy' | 'sell' | 'hold'
+
+type tableData = {
+  ticker: string
+  action: action
+  timestamp: number
+  id: number
+  close: number
+  chimpScore: number
+}
+
+const formatData = (data: data): tableData => {
+  let action: action = 'buy';
+  let last = data.buy;
+
+  if (data.hold > data.buy) {
+    action = 'hold';
+    last = data.hold;
+  }
+
+  if (data.sell > last) {
+    action = 'sell';
+    last = data.sell;
+  }
+
+  const chimpScore = Number(((Math.max(data.buy, data.sell) - data.hold) * 100).toFixed(2));
+
+  return {
+    ticker: data.ticker,
+    action: action,
+    id: data.id,
+    timestamp: Date.parse(data.timestamp),
+    close: data.close,
+    chimpScore,
+  } as tableData
+}
+
 
 export default function Home() {
   const { setTheme } = useNextTheme();
   const { isDark, type } = useTheme();
-  const [data, setData] = useState<data[]>([]);
+  const [data, setData] = useState<tableData[]>([]);
   const [animationParent] = useAutoAnimate()
 
+  const getData = () => {
+    console.log('Getting new data')
+    fetch(`${baseUrl}/getData`)
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Something went wrong");
+
+        }
+
+        return res.json();
+      })
+      .then((data) => {
+        setData(data.map(formatData));
+      }).catch((e) => console.log(e))
+  }
 
   useEffect(() => {
-    fetch(`${baseUrl}/getData`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        console.log(data);
-      }).catch((e) => console.log(e))
+    getData()
+    let interval = setInterval(getData, 1000 * 30)
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [])
 
 
@@ -71,16 +137,16 @@ export default function Home() {
         />
 
       </div>
+      <Spacer />
       {
         data.length ?
           <Table
             ref={animationParent as Ref<HTMLTableElement>}
             bordered
             shadow={false}
-            aria-label="Example static bordered collection table"
             css={{
-              height: "auto",
-              minWidth: "100%",
+              maxHeight: "auto",
+              minWidth: "400px",
             }}
           >
             <Table.Header columns={columns}>
@@ -88,13 +154,13 @@ export default function Home() {
                 <Table.Column key={column.key}>{column.label}</Table.Column>
               )}
             </Table.Header>
-            <Table.Body items={data}>
+            <Table.Body items={getLatestCoins(data)}>
               {(item: any) => (
                 <Table.Row >
                   {(columnKey) => {
                     const value = item[columnKey];
 
-                    if (columnKey === 'prediction') {
+                    if (columnKey === 'action') {
                       let color: 'secondary' | 'primary' | 'default';
 
                       if (value === 'sell') {
@@ -108,13 +174,17 @@ export default function Home() {
                       return <Table.Cell><Badge enableShadow disableOutline color={color}>{value}</Badge></Table.Cell>
                     }
 
+                    // if (columnKey === 'ticker') {
+                    //   return //<CryptoIcon ticker={value} />//tickerToIcon(value)
+                    // }
+
                     return <Table.Cell>{value}</Table.Cell>
                   }}
                 </Table.Row>
               )}
             </Table.Body>
           </Table>
-          : <>No data</>
+          : <Loading size="xl" />
       }
       <Message message={message} type='sunglasses' duration={10000000} />
     </div >

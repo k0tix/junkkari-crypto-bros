@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Image } from '@nextui-org/react';
+import { Bitcoin, Binance } from 'cryptocons'
 
 type MonkeyType = 'sunglasses' | 'yes' | 'sad' | 'spin';
 
@@ -62,4 +63,20 @@ export default function Message({ message, duration, type }: MessageProps) {
 
         </div> : <></>
     )
+}
+
+type CryptoIconProps = {
+    ticker: string
+}
+
+export function CryptoIcon({ ticker }: CryptoIconProps) {
+    if (ticker === 'btcusdt') {
+        return <Bitcoin />
+    }
+
+    if (ticker === 'bnbusdt') {
+        return <Binance />
+    }
+
+    return <>{ticker}</>
 }
