@@ -1,0 +1,44 @@
+# openapi2-functions.yaml
+swagger: '2.0'
+host: "cryptochimpgw-9oq2br2d.ew.gateway.dev"
+x-google-endpoints:
+- name: "cryptochimpgw-9oq2br2d.ew.gateway.dev"
+  allowCors: true
+info:
+  title: API_ID optional-string
+  description: Sample API on API Gateway with a Google Cloud Functions backend
+  version: 1.0.0
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  /getData:
+    get:
+      summary: gets data
+      operationId: getData
+      x-google-backend:
+        address: https://europe-west1-junction-hack22esp-7052.cloudfunctions.net/test-function-2
+      responses:
+        '200':
+          description: A successful response
+          schema:
+            type: string
+    options:
+      operationId: getData
+      x-google-backend:
+        address: https://europe-west1-junction-hack22esp-7052.cloudfunctions.net/test-function-2
+      responses:
+        '200':
+          description: A successful response
+  /setData:
+    post:
+      summary: posts data
+      operationId: setData
+      x-google-backend:
+        address: https://europe-west1-junction-hack22esp-7052.cloudfunctions.net/test-function-3
+      responses:
+        '200':
+          description: successful
+          schema:
+            type: string
