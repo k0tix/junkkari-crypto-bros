@@ -10,7 +10,7 @@ from binance.spot import Spot
 
 app = Flask(__name__)
 
-tickers = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+tickers = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "DOGEUSDT", "XRPUSDT", "BUSDUSDT", "ADAUSDT", "SOLUSDT", "MATICUSDT", "DOTUSDT"]
 
 client = Spot()
 
